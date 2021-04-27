@@ -1,3 +1,10 @@
+# Ignore output
+output
+
+# Ignore Cython files
+*.c
+*.pyx
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
