@@ -1,7 +1,13 @@
 import argparse
 import os
 import time
-import timeit
+
+try:
+    from util.parser_c import parse_input, int_to_bytes
+except:
+    from util.parser import parse_input, int_to_bytes
+    print('Importing parser.. Please run setup.py')
+
 
 try:
     import util.aes_c as aes
@@ -10,20 +16,11 @@ except:
     print('Importing aes.. Please run setup.py')
 
 try:
+    assert False, 'Debug mode'
     import util.rsa_c as rsa
 except:
     import util.rsa as rsa
     print('Importing rsa.. Please run setup.py')
-
-def parse_input(input):
-    if os.path.exists(input): return (parse_file(input), 'file')
-
-    return (input.encode('utf-8'), 'text')
-
-def parse_file(file):
-    with open(file, 'rb') as f:
-        data = f.read()
-    return data
 
 def encrypt_aes(data, key, iv):
     return aes.AES(key).encrypt_ctr(data, iv)
@@ -84,7 +81,7 @@ if __name__ == "__main__":
     if not os.path.exists('output'):
         os.mkdir('output')
 
-    if (opt.task == 'encrypt'):
+    if (opt.task == 'encrypt_aes'):
         encrypted_bytes = encrypt_aes(data, key, iv)
 
         output(opt, encrypted_bytes)
@@ -95,7 +92,7 @@ if __name__ == "__main__":
         with open('output/iv.txt', 'wb') as f:
             f.write(iv)
 
-    elif (opt.task == 'decrypt'):
+    elif (opt.task == 'decrypt_aes'):
         decrypted_bytes = decrypt_aes(data, key, iv)
 
         output(opt, decrypted_bytes)
@@ -134,3 +131,38 @@ if __name__ == "__main__":
 
         output(opt, enc, out='output/key.encrypted')
         output(opt, dec, out='output/key.decrypted')
+    elif (opt.task == 'test_rsa'):
+        rsa_obj = rsa.RSA(512)
+        # print(len(data))
+        start = time.time()
+        # print(data)
+        enc = rsa_obj.encrypt(data)
+        print(f'Encrypting: {time.time() - start} s')
+        print(f'Size of dec key: {len(int_to_bytes(rsa_obj.d))}')
+
+        print(f'Size of data: {len(data)}')
+        print(f'Size of enc: {len(enc)}')
+        print(f'Size of enc[0]: {len(enc[0])}')
+        print(f'Size of enc full: {len(enc[0])*len(enc)}')
+        print(f'Size of n: {len(int_to_bytes(rsa_obj.N))}')
+        # print(len(data))
+        # print(len(enc))
+        # print(data)
+        # print('len data: ', len(data))
+
+        # start = time.time()
+        # dec = rsa_obj.decrypt(enc)
+        # print(f'Decrypting: {time.time() - start} s')
+
+        # assert len(data) == len(dec), 'Length not equal!'
+
+        # assert data == dec, 'Data and decrypted are not equal!'
+
+        # output(opt, enc, out='output/file.encrypted')
+        # output(opt, data, out='output/file.decrypted')
+    elif (opt.task == 'save_rsa'):
+        # save public key
+        pem = rsa._save_pkcs1_pem(65537, 21879504801587652898858167460888405742804451521147521456003848352094635789498939169518658268566389839414765211718137676365482786331627700007313431455658608268502577004060128016035443843363883344224522580726098536122749843985137016996578381912076909604333564731149460224570264484537723552609989449932522515313055358061096927176568531628237679192085124917291845444949860351328391410599961588321500284264796285922221224970922429563781497239212573614820601531278515315578701354591802149380940325882290796138972092793643001634449308124352768317596045508762383083064003615703800781906184083399397968951460467474136704152443)
+        print(pem)
+        with open('key.pem', 'wb') as f:
+            f.write(pem)
