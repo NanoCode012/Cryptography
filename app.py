@@ -16,6 +16,7 @@ except:
     print('Importing aes.. Please run setup.py')
 
 try:
+    # assert False
     import util.rsa_c as rsa
 except:
     import util.rsa as rsa
@@ -131,7 +132,7 @@ if __name__ == "__main__":
         output(opt, enc, out='output/key.encrypted')
         output(opt, dec, out='output/key.decrypted')
     elif (opt.task == 'test_rsa'):
-        rsa_obj = rsa.RSA(1024)
+        rsa_obj = rsa.RSA(2048)
         start = time.time()
         enc = rsa_obj.encrypt(data)
         print(f'Encrypting: {time.time() - start} s')
@@ -150,8 +151,8 @@ if __name__ == "__main__":
         # print('len data: ', len(data))
 
         start = time.time()
-        dec = rsa_obj.decrypt(enc)
-        print(f'Decrypting: {time.time() - start} s')
+        dec = rsa_obj.decrypt(enc, use_chinese_algo=True)
+        print(f'Decrypting with chinese: {time.time() - start} s')
 
         assert len(data) == len(dec), f'Length not equal! {len(data)} vs {len(dec)}'
 

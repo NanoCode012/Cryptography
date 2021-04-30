@@ -80,6 +80,11 @@ class RSA:
         self.e = 65537 # Industry Standard (Has only 2 bits set)
         self.d = Crypto.Util.number.inverse(self.e, self.PHI)
 
+        # for chinese remainder theorem
+        self.dp = self.d % (self.p-1)
+        self.dq = self.d % (self.q-1)
+        self.qinv = Crypto.Util.number.inverse(self.q, self.p)
+
     def _pad(self, b: bytes, padding: str='OneAndZeroes'):
         if padding == 'OneAndZeroes':
             # https://crypto.stackexchange.com/questions/18171/how-to-find-which-padding-method-is-used-in-block-cipher-aes-encyption
@@ -145,7 +150,7 @@ class RSA:
             
         return bytes(M_byte)
 
-    def decrypt(self, C):
+    def decrypt(self, C, use_chinese_algo=True):
         # assert isinstance(C, bytes), 'C has to be bytes obj'
         
         length = self.length * 2
@@ -160,11 +165,23 @@ class RSA:
         # C_arr = [int.from_bytes(c, byteorder='big') for c in C]
         C_arr = [int.from_bytes(c, byteorder='big') for c in C_arr]
 
-        #Update to https://en.wikipedia.org/wiki/RSA_(cryptosystem)#Using_the_Chinese_remainder_algorithm
-        C_arr = [int_to_bytes(pow(c, self.d, self.N)) for c in C_arr]
+        #Update to https://en.wikipedia.org/wiki/RSA_(cryptosystem)#Using_the_Chinese_remainder_algorithm (See next block)
+        # C_arr = [int_to_bytes(pow(c, self.d, self.N)) for c in C_arr]
+        
+        # Assign list size first to reduce overhead with dynamic resizing
+        C_arr_o = [None]*len(C_arr)
+        if use_chinese_algo:
+            for i, c in enumerate(C_arr):
+                m1 = pow(c, self.dp, self.p)
+                m2 = pow(c, self.dq, self.q)
+                h = (self.qinv * (m1 - m2)) % self.p
+                C_arr_o[i] = int_to_bytes((m2 + (h * self.q)) % self.N)
+        else:
+            for i, c in enumerate(C_arr):
+                C_arr_o[i] = int_to_bytes(pow(c, self.d, self.N))
 
         # Special case block starts with \x00 but gets lost during decryption
-        C_arr = self._pad_zeroes(C_arr, self.length)
+        C_arr = self._pad_zeroes(C_arr_o, self.length)
 
         C_arr[-1] = self._unpad(C_arr[-1])
 
