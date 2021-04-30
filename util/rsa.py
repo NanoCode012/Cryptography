@@ -84,18 +84,29 @@ class RSA:
         if padding == 'OneAndZeroes':
             # https://crypto.stackexchange.com/questions/18171/how-to-find-which-padding-method-is-used-in-block-cipher-aes-encyption
             # Use 0x80 instead for byte level
-            return b + bytes.fromhex('80') + bytes.fromhex('00')*(self.length - len(b) -1)
+            return b + bytes.fromhex('80') + bytes(self.length - len(b) -1)
         
         raise Exception('Padding not valid')
 
+    def _pad_zeroes(self, arr: list, length: int):
+        # Pad each block in front with zero if size < blocksize/length
+        # zero = bytes_to_int(bytes.fromhex('00'))
+        new_arr = arr.copy()
+        for i in range(0, len(new_arr)):
+            if len(new_arr[i]) < length:
+                new_arr[i] = bytes(length - len(new_arr[i])) + new_arr[i]
+
+        return new_arr
+
     def _unpad(self, b: bytes, padding: str='OneAndZeroes'):
         if padding == 'OneAndZeroes':
-            zero = bytes_to_int(bytes.fromhex('00'))
             one = bytes_to_int(bytes.fromhex('80'))
 
             for i in range(len(b)-1, 0, -1):
                 # print(b[i])
                 if (b[i] == 0): continue
+
+                # Is not padded
                 if (b[i] != one): return b
 
                 # Is padded
@@ -122,7 +133,10 @@ class RSA:
         M_arr = [bytes_to_int(M) for M in M_arr]
         M_arr = [int_to_bytes(pow(M, self.e, self.N)) for M in M_arr]
 
-        return M_arr # test
+        # return M_arr # test
+
+        # Makes sure each block is length*2 bits before combine
+        M_arr = self._pad_zeroes(M_arr, length*2)
 
         M_byte = bytearray()
 
@@ -131,25 +145,26 @@ class RSA:
             
         return bytes(M_byte)
 
-    def decrypt(self, C: list):
+    def decrypt(self, C):
         # assert isinstance(C, bytes), 'C has to be bytes obj'
         
-        # length = (self.bits // 8) * 2
-        # C_arr = self._split_bytes(C, length)
+        length = self.length * 2
+        # print(f'Length of c: {len(C)}')
+        # print(f'Length: {length}')
+        C_arr = self._split_bytes(C, length)
+        # print(f'Length C_arr : {len(C_arr)}')
+        # print(f'Length C_arr[0]: {len(C_arr[0])}')
+        assert len(C) % length == 0, 'Not divisible'
 
         # Convert to int and decrypt block by block
-        C_arr = [int.from_bytes(c, byteorder='big') for c in C]
-        # C_arr = [int.from_bytes(c, byteorder='big') for c in C_arr]
+        # C_arr = [int.from_bytes(c, byteorder='big') for c in C]
+        C_arr = [int.from_bytes(c, byteorder='big') for c in C_arr]
 
         #Update to https://en.wikipedia.org/wiki/RSA_(cryptosystem)#Using_the_Chinese_remainder_algorithm
         C_arr = [int_to_bytes(pow(c, self.d, self.N)) for c in C_arr]
 
-        # Pad each block in front with zero if size < blocksize
-        # Special case block starts with \x00 but gets lost during encryption
-        zero = bytes_to_int(bytes.fromhex('00'))
-        for i in range(0, len(C_arr)):
-            if len(C_arr[i]) < self.length:
-                C_arr[i] = bytes([zero * (self.length - len(C_arr[i]))]) + C_arr[i]
+        # Special case block starts with \x00 but gets lost during decryption
+        C_arr = self._pad_zeroes(C_arr, self.length)
 
         C_arr[-1] = self._unpad(C_arr[-1])
 
