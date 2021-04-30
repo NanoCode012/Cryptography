@@ -60,7 +60,7 @@ class PublicKey:
 
 
 class RSA:
-    def __init__(self, bits=1024):
+    def __init__(self, bits=2048):
         # assert bits in (1024,2048,3072,4096), 'bits need to be in 1024,2048,3072,4096'
 
         from math import log2
