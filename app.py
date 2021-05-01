@@ -132,7 +132,10 @@ if __name__ == "__main__":
         output(opt, enc, out='output/key.encrypted')
         output(opt, dec, out='output/key.decrypted')
     elif (opt.task == 'test_rsa'):
-        rsa_obj = rsa.RSA(2048)
+        start = time.time()
+        rsa_obj = rsa.RSA(1024)
+        print(f'RSA object creation: {time.time() - start} s') #Crypto lib takes 0.3s -> 1.1s for 1024bits
+        
         start = time.time()
         enc = rsa_obj.encrypt(data)
         print(f'Encrypting: {time.time() - start} s')
@@ -152,7 +155,7 @@ if __name__ == "__main__":
 
         start = time.time()
         dec = rsa_obj.decrypt(enc, use_chinese_algo=True)
-        print(f'Decrypting with chinese: {time.time() - start} s')
+        print(f'Decrypting with chinese: {time.time() - start} s') #49s for custom pow
 
         assert len(data) == len(dec), f'Length not equal! {len(data)} vs {len(dec)}'
 

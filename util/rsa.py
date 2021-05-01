@@ -3,19 +3,18 @@ from pyasn1.type import univ, namedtype, tag
 
 import sys
 import util.pem as pem
+
 try:
     from util.parser_c import int_to_bytes, bytes_to_int
 except:
     from util.parser import int_to_bytes, bytes_to_int
     print('Importing parser.. Please run setup.py')
 
-
-def encrypt(plain, e, N):
-    return pow(plain, e, N)
-
-
-def decrypt(cipher, d, N):
-    return pow(cipher, d, N)
+try:
+    from util.prime_c import getPrime
+except:
+    from util.prime import getPrime
+    print('Importing prime.. Please run setup.py')
 
 
 class PublicKey:
@@ -60,7 +59,7 @@ class PublicKey:
 
 
 class RSA:
-    def __init__(self, bits=1024):
+    def __init__(self, bits=1024, own_components=True):
         # assert bits in (1024,2048,3072,4096), 'bits need to be in 1024,2048,3072,4096'
 
         from math import log2
@@ -68,22 +67,33 @@ class RSA:
         assert (bits / 8) % 1 == 0, 'Bits need to be divisible of 8'
         self.bits = bits
         self.length = bits//8
-        self._generate()
+        self._generate(own_components)
 
-    def _generate(self):
-        self.p = Crypto.Util.number.getPrime(
-            self.bits, randfunc=Crypto.Random.get_random_bytes)
-        self.q = Crypto.Util.number.getPrime(
-            self.bits, randfunc=Crypto.Random.get_random_bytes)
+    def _generate(self, own_components):
+        if own_components:
+            self.p = getPrime(self.bits)
+            self.q = getPrime(self.bits)
+        else:
+            self.p = Crypto.Util.number.getPrime(
+                self.bits, randfunc=Crypto.Random.get_random_bytes)
+            self.q = Crypto.Util.number.getPrime(
+                self.bits, randfunc=Crypto.Random.get_random_bytes)
+
         self.N = self.p * self.q
         self.PHI = (self.p-1)*(self.q-1)
         self.e = 65537 # Industry Standard (Has only 2 bits set)
-        self.d = Crypto.Util.number.inverse(self.e, self.PHI)
+        if own_components:
+            self.d = pow(self.e, -1, self.PHI)
+        else:
+            self.d = Crypto.Util.number.inverse(self.e, self.PHI)
 
         # for chinese remainder theorem
         self.dp = self.d % (self.p-1)
         self.dq = self.d % (self.q-1)
-        self.qinv = Crypto.Util.number.inverse(self.q, self.p)
+        if own_components:
+            self.qinv = pow(self.q, -1, self.p)
+        else:
+            self.qinv = Crypto.Util.number.inverse(self.q, self.p)
 
     def _pad(self, b: bytes, padding: str='OneAndZeroes'):
         if padding == 'OneAndZeroes':
@@ -120,7 +130,22 @@ class RSA:
         raise Exception('Padding not valid')
 
     def _split_bytes(self, b: bytes, length: int):
-        return [b[i:i+length] for i in range(0, len(b), length)]
+        from math import ceil
+
+        L = ceil(len(b) / length)
+        res = [None] * L
+        for i in range(0, L):
+            res[i] = b[i*length:(i+1)*length]
+
+        return res
+
+    def _join_blocks(self, arr):
+        bytes_arr = bytearray()
+
+        for b in arr:
+            bytes_arr.extend(b)
+            
+        return bytes(bytes_arr)
 
     def encrypt(self, message: bytes, padding='OneAndZeroes'):
         assert isinstance(message, bytes), 'M has to be bytes obj'
@@ -142,13 +167,8 @@ class RSA:
 
         # Makes sure each block is length*2 bits before combine
         M_arr = self._pad_zeroes(M_arr, length*2)
-
-        M_byte = bytearray()
-
-        for M in M_arr:
-            M_byte.extend(M)
             
-        return bytes(M_byte)
+        return self._join_blocks(M_arr)
 
     def decrypt(self, C, use_chinese_algo=True):
         # assert isinstance(C, bytes), 'C has to be bytes obj'
@@ -165,9 +185,11 @@ class RSA:
         # C_arr = [int.from_bytes(c, byteorder='big') for c in C]
         C_arr = [int.from_bytes(c, byteorder='big') for c in C_arr]
 
-        #Update to https://en.wikipedia.org/wiki/RSA_(cryptosystem)#Using_the_Chinese_remainder_algorithm (See next block)
+        # https://stackoverflow.com/questions/5246856/how-did-python-implement-the-built-in-function-pow
+        # https://github.com/python/cpython/blob/109fc2792a490ee5cd8a423e17d415fbdedec5c8/Objects/longobject.c#L4244-L4447
         # C_arr = [int_to_bytes(pow(c, self.d, self.N)) for c in C_arr]
         
+        #Update to https://en.wikipedia.org/wiki/RSA_(cryptosystem)#Using_the_Chinese_remainder_algorithm (See next block)
         # Assign list size first to reduce overhead with dynamic resizing
         C_arr_o = [None]*len(C_arr)
         if use_chinese_algo:
@@ -183,16 +205,12 @@ class RSA:
         # Special case block starts with \x00 but gets lost during decryption
         C_arr = self._pad_zeroes(C_arr_o, self.length)
 
+        # Unpad last block
         C_arr[-1] = self._unpad(C_arr[-1])
 
         # print(C_arr)
 
-        C_byte = bytearray()
-
-        for c in C_arr:
-            C_byte.extend(c)
-
-        return bytes(C_byte)
+        return self._join_blocks(C_arr)
 
 
 
@@ -234,9 +252,9 @@ def test(message, bits=1024):
     M = int.from_bytes(message, byteorder='big')
     #print ("\n\n=== Let's try these keys ==")
     #print ("\nRSA Message: ",M)
-    enc = encrypt(M, e, N)
+    enc = pow(M, e, N)
     #print ("RSA Cipher(c=M^e mod N): ",enc)
-    dec = decrypt(enc, d, N)
+    dec = pow(enc, d, N)
     #print ("RSA Decipher (c^d mod N): ",dec)
     return (enc, dec)
 

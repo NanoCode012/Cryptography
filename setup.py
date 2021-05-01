@@ -5,7 +5,7 @@ from Cython.Build import cythonize
 from shutil import copyfile, move
 import glob, os
 
-file_names = ['util/aes.py', 'util/rsa.py', 'util/parser.py']
+file_names = ['util/aes.py', 'util/rsa.py', 'util/parser.py', 'util/prime.py']
 
 for file_name in file_names:
     file_name_c =  file_name[:-3] + '_c.pyx'
