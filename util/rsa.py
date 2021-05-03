@@ -3,6 +3,7 @@ from pyasn1.type import univ, namedtype, tag
 
 import sys
 import util.pem as pem
+from util.util import timing
 
 try:
     from util.parser_c import int_to_bytes, bytes_to_int
@@ -59,6 +60,7 @@ class PublicKey:
 
 
 class RSA:
+    @timing
     def __init__(self, bits=1024, own_components=True):
         # assert bits in (1024,2048,3072,4096), 'bits need to be in 1024,2048,3072,4096'
 
@@ -147,6 +149,7 @@ class RSA:
             
         return bytes(bytes_arr)
 
+    @timing
     def encrypt(self, message: bytes, padding='OneAndZeroes'):
         assert isinstance(message, bytes), 'M has to be bytes obj'
 
@@ -170,6 +173,7 @@ class RSA:
             
         return self._join_blocks(M_arr)
 
+    @timing
     def decrypt(self, C, use_chinese_algo=True):
         # assert isinstance(C, bytes), 'C has to be bytes obj'
         
