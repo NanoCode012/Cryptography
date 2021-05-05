@@ -20,7 +20,7 @@ except:
 
 class RSA:
     @timing
-    def __init__(self, bits=1024, own_components=True):
+    def __init__(self, bits=1024, own_components=True, generate=True):
         # assert bits in (1024,2048,3072,4096), 'bits need to be in 1024,2048,3072,4096'
 
         from math import log2
@@ -29,7 +29,9 @@ class RSA:
         assert (bits / 8) % 1 == 0, "Bits need to be divisible of 8"
         self.bits = bits
         self.length = bits // 8
-        self._generate(own_components)
+
+        if generate:
+            self._generate(own_components)
 
     def _generate(self, own_components):
         if own_components:
@@ -113,7 +115,7 @@ class RSA:
 
         return bytes(bytes_arr)
 
-    def save_pem(self, path, file_name):
+    def save_pub_pem(self, path, file_name):
         from util.RSA.key import PublicKey
         import os
 
@@ -121,6 +123,61 @@ class RSA:
 
         with open(os.path.join(path, file_name + ".pub"), "wb") as f:
             f.write(pk)
+
+    def save_priv_pem(self, path, file_name):
+        from util.RSA.key import PrivateKey
+        import os
+
+        pr = PrivateKey(
+            e=self.e, N=self.N, d=self.d, p=self.p, q=self.q
+        )._save_pkcs1_pem()
+
+        with open(os.path.join(path, file_name), "wb") as f:
+            f.write(pr)
+
+    @classmethod
+    def load_pub_pem(cls, path, file_name):
+        from util.RSA.key import PublicKey
+        import os
+
+        with open(os.path.join(path, file_name + ".pub"), "rb") as f:
+            pk_pem = f.read()
+
+        pk = PublicKey._load_pkcs1_pem(pk_pem)
+
+        # Convert bytes to bits and divide by 2
+        # because N is 2x bit length
+        bits = len(int_to_bytes(pk.__getstate__()[1])) * 8 // 2
+
+        rsa_obj = cls(bits=bits, generate=False)
+        (rsa_obj.e, rsa_obj.N) = pk.__getstate__()
+        return rsa_obj
+
+    @classmethod
+    def load_priv_pem(cls, path, file_name):
+        from util.RSA.key import PrivateKey
+        import os
+
+        with open(os.path.join(path, file_name), "rb") as f:
+            pr_pem = f.read()
+
+        pr = PrivateKey._load_pkcs1_pem(pr_pem)
+
+        rsa_obj = cls(
+            bits=len(int_to_bytes(pr.__getstate__()[1])) * 8 // 2, generate=False
+        )
+
+        (
+            rsa_obj.e,
+            rsa_obj.N,
+            rsa_obj.d,
+            rsa_obj.p,
+            rsa_obj.q,
+            rsa_obj.dp,
+            rsa_obj.dq,
+            rsa_obj.qinv,
+        ) = pr.__getstate__()
+        return rsa_obj
 
     @timing
     def encrypt(self, message: bytes, padding="OneAndZeroes"):

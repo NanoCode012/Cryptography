@@ -176,16 +176,72 @@ if __name__ == "__main__":
 
         assert data == dec, "Data and decrypted are not equal!"
 
-        rsa_obj.save_pem("output", "key")
+        rsa_obj.save_pub_pem("output", "key")
 
         output(opt, enc, out="output/file.encrypted")
         output(opt, dec, out="output/file.decrypted")
-    elif opt.task == "save_rsa":
+
+        print("Test successful: RSA encryption + decryption")
+    elif opt.task == "test_save_rsa":
         # save public key
         pem = rsa._save_pkcs1_pem(
             65537,
             21879504801587652898858167460888405742804451521147521456003848352094635789498939169518658268566389839414765211718137676365482786331627700007313431455658608268502577004060128016035443843363883344224522580726098536122749843985137016996578381912076909604333564731149460224570264484537723552609989449932522515313055358061096927176568531628237679192085124917291845444949860351328391410599961588321500284264796285922221224970922429563781497239212573614820601531278515315578701354591802149380940325882290796138972092793643001634449308124352768317596045508762383083064003615703800781906184083399397968951460467474136704152443,
         )
         print(pem)
+
         with open("output/key.pem", "wb") as f:
             f.write(pem)
+    elif opt.task == "test_load_rsa_pub":
+        # create a real encryption
+        rsa_obj = rsa.RSA(1024)
+        enc_real = rsa_obj.encrypt(data)
+        rsa_obj.save_pub_pem("output", "key")
+
+        e, N, bits = rsa_obj.e, rsa_obj.N, rsa_obj.bits
+
+        # load public key
+        rsa_obj = rsa.RSA.load_pub_pem("output", "key")
+        enc_test = rsa_obj.encrypt(data)
+
+        assert rsa_obj.e == e, f"Different e {rsa_obj.e} vs {e}"
+        assert rsa_obj.N == N, f"Different N {rsa_obj.N} vs {N}"
+        assert rsa_obj.bits == bits, f"Different bits {rsa_obj.bits} vs {bits}"
+
+        assert len(enc_real) == len(
+            enc_test
+        ), f"Length not equal! {len(enc_real)} vs {len(enc_test)}"
+        assert enc_real == enc_test, "Encrypted real and Encrypted test are not equal!"
+
+        output(opt, enc_real, out="output/enc_real.encrypted")
+        output(opt, enc_test, out="output/enc_test.encrypted")
+
+        print("Test successful: Load RSA from PUBLIC key and encrypt match")
+
+    elif opt.task == "test_load_rsa_priv":
+        # create a real encryption
+        rsa_obj = rsa.RSA(1024)
+        enc = rsa_obj.encrypt(data)
+        dec_real = rsa_obj.decrypt(enc)
+        rsa_obj.save_priv_pem("output", "key")
+
+        e, N, bits = rsa_obj.e, rsa_obj.N, rsa_obj.bits
+
+        # load public key
+        rsa_obj = rsa.RSA.load_priv_pem("output", "key")
+        dec_test = rsa_obj.decrypt(enc)
+
+        assert rsa_obj.e == e, f"Different e {rsa_obj.e} vs {e}"
+        assert rsa_obj.N == N, f"Different N {rsa_obj.N} vs {N}"
+        assert rsa_obj.bits == bits, f"Different bits {rsa_obj.bits} vs {bits}"
+
+        assert len(dec_real) == len(
+            dec_test
+        ), f"Length not equal! {len(dec_real)} vs {len(dec_test)}"
+        assert dec_real == dec_test, "Decrypted real and Decrypted test are not equal!"
+
+        output(opt, dec_real, out="output/dec_real.decrypted")
+        output(opt, dec_test, out="output/dec_test.decrypted")
+
+        print("Test successful: Load RSA from PRIVATE key and decrypt match")
+
