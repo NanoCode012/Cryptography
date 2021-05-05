@@ -90,5 +90,9 @@ class TestMix(unittest.TestCase):
         self.assertEqual(dec_key, self.iv + self.key)
 
 
-if __name__ == "__main__":
+def main():
     unittest.main(buffer=True)
+
+
+if __name__ == "__main__":
+    main()
