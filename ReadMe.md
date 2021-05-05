@@ -18,7 +18,16 @@ python setup.py build_ext --inplace
 ```bash
 python app.py [optional parameters]
 ```
+
 See `app.py` ArgumentParser for optional parameters.
+
+## Test
+Easily test that all features are working via
+```bash
+python tests.py [-v] 
+```
+
+`-v`: verbose
 
 ## Credit
 
