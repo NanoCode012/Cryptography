@@ -135,6 +135,13 @@ class RSA:
         with open(os.path.join(path, file_name), "wb") as f:
             f.write(pr)
 
+    def save_pem(self, path, file_name):
+        """
+        Saves both public and private key
+        """
+        self.save_pub_pem(path, file_name)
+        self.save_priv_pem(path, file_name)
+
     @classmethod
     def load_pub_pem(cls, path, file_name):
         from util.RSA.key import PublicKey
@@ -247,6 +254,7 @@ class RSA:
         return self._join_blocks(C_arr)
 
 
+@timing
 def test(message, bits=1024):
 
     # print ("No of bits in prime is ",bits)
