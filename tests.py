@@ -83,6 +83,13 @@ class TestRSA(unittest.TestCase):
         self.assertEqual(len(dec_real), len(dec_test))
         self.assertEqual(dec_real, dec_test)
 
+    def test_fail_load_pub_to_decrypt(self):
+        enc = self.rsa_obj.encrypt(self.data)
+        self.rsa_obj.save_pub_pem("output", "temp")
+        rsa_obj = rsa.RSA.load_pub_pem("output", "temp")
+
+        self.assertRaises(AttributeError, rsa_obj.decrypt, enc)
+
 
 class TestMix(unittest.TestCase):
     def setUp(self):
