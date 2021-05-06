@@ -248,6 +248,10 @@ class RSA:
 
 @timing
 def test(message, bits=1024):
+    """
+    This code is deprecated and should not be called. 
+    This is only for testing RSA flow.
+    """
 
     # print ("No of bits in prime is ",bits)
 
