@@ -103,11 +103,8 @@ if __name__ == "__main__":
 
         output(opt, encrypted_bytes)
 
-        with open("output/key.txt", "wb") as f:
-            f.write(key)
-
-        with open("output/iv.txt", "wb") as f:
-            f.write(iv)
+        output(opt, key, out="output/key.txt")
+        output(opt, iv, out="output/iv.txt")
 
     elif opt.task == "decrypt_aes":
         decrypted_bytes = decrypt_aes(data, key, iv)
@@ -182,16 +179,6 @@ if __name__ == "__main__":
         output(opt, dec, out="output/file.decrypted")
 
         print("Test successful: RSA encryption + decryption")
-    elif opt.task == "test_save_rsa":
-        # save public key
-        pem = rsa._save_pkcs1_pem(
-            65537,
-            21879504801587652898858167460888405742804451521147521456003848352094635789498939169518658268566389839414765211718137676365482786331627700007313431455658608268502577004060128016035443843363883344224522580726098536122749843985137016996578381912076909604333564731149460224570264484537723552609989449932522515313055358061096927176568531628237679192085124917291845444949860351328391410599961588321500284264796285922221224970922429563781497239212573614820601531278515315578701354591802149380940325882290796138972092793643001634449308124352768317596045508762383083064003615703800781906184083399397968951460467474136704152443,
-        )
-        print(pem)
-
-        with open("output/key.pem", "wb") as f:
-            f.write(pem)
     elif opt.task == "test_load_rsa_pub":
         # create a real encryption
         rsa_obj = rsa.RSA(1024)
