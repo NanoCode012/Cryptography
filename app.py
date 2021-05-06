@@ -135,7 +135,7 @@ if __name__ == "__main__":
         key, iv = config_aes(opt)
         encrypted_bytes = encrypt_aes(data, key, iv)
 
-        output(opt, encrypted_bytes)
+        output(opt, encrypted_bytes, out="output/file.encrypted")
 
         output(opt, key, out="output/key.txt")
         output(opt, iv, out="output/iv.txt")
@@ -144,7 +144,7 @@ if __name__ == "__main__":
         key, iv = config_aes(opt)
         decrypted_bytes = decrypt_aes(data, key, iv)
 
-        output(opt, decrypted_bytes)
+        output(opt, decrypted_bytes, out="output/file.decrypted")
 
     elif opt.task == "encrypt_rsa":
         rsa_obj = config_rsa(opt)
@@ -164,28 +164,44 @@ if __name__ == "__main__":
 
         output(opt, dec, out="output/file.decrypted")
 
-    elif opt.task == "test":  # This uses old RSA code
+    elif opt.task == "test":
         key, iv = config_aes(opt)
         encrypted_bytes = encrypt_aes(data, key, iv)
-
-        output(opt, encrypted_bytes, out="output/test.encrypted")
-
         decrypted_bytes = decrypt_aes(encrypted_bytes, key, iv)
 
-        output(opt, decrypted_bytes, out="output/test.decrypted")
+        assert data == decrypted_bytes, "Data is not the same as decrypted value"
+
+        rsa_obj = config_rsa(opt)
 
         # Encrypt (iv, key)
-        enc, dec = rsa.test(iv + key)
+        enc_key = rsa_obj.encrypt(iv + key)
+        dec_key = rsa_obj.decrypt(enc_key)
 
-        assert (
-            int_to_bytes(dec) == iv + key
-        ), "Key is not the same as the decrypted value"
+        assert dec_key == iv + key, "Decrypted key is not the same as key+iv"
 
-        enc = int_to_bytes(enc)
-        dec = int_to_bytes(dec)
+        output(opt, encrypted_bytes, out="output/file.encrypted")
+        output(opt, decrypted_bytes, out="output/file.decrypted")
 
-        output(opt, enc, out="output/key.encrypted")
-        output(opt, dec, out="output/key.decrypted")
+        rsa_obj.save_pem("output", "key")
+
+        print(
+            "Test successful: AES encryption + decryption of file AND RSA encryption + decryption of keys"
+        )
+    elif opt.task == "test_aes":
+        key, iv = config_aes(opt)
+        encrypted_bytes = encrypt_aes(data, key, iv)
+        decrypted_bytes = decrypt_aes(encrypted_bytes, key, iv)
+
+        assert data == decrypted_bytes, "Data is not the same as decrypted value"
+
+        output(opt, encrypted_bytes, out="output/file.encrypted")
+        output(opt, decrypted_bytes, out="output/file.decrypted")
+
+        output(opt, key, out="output/key.txt")
+        output(opt, iv, out="output/iv.txt")
+
+        print("Test successful: AES encryption + decryption of file")
+
     elif opt.task == "test_rsa":
         rsa_obj = config_rsa(opt)
         # Crypto lib takes 0.3s -> 1.1s for 1024bits
@@ -240,7 +256,7 @@ if __name__ == "__main__":
 
         e, N, bits = rsa_obj.e, rsa_obj.N, rsa_obj.bits
 
-        # load public key
+        # load private key
         rsa_obj = rsa.RSA.load_priv_pem("output", "key")
         dec_test = rsa_obj.decrypt(enc)
 
