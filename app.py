@@ -2,6 +2,8 @@ import argparse
 import os
 import time
 
+from util.util import timing
+
 try:
     from util.parser_c import parse_input, int_to_bytes
 except:
@@ -43,24 +45,14 @@ def config_aes(opt):
     return key, iv
 
 
+@timing
 def encrypt_aes(data, key, iv):
     return aes.AES(key).encrypt_ctr(data, iv)
 
 
+@timing
 def decrypt_aes(cipher, key, iv):
     return aes.AES(key).decrypt_ctr(cipher, iv)
-
-
-def encrypt_rsa(data, e, N):
-    assert isinstance(data, bytes), "Data is not of type bytes"
-
-    return rsa.encrypt(int.from_bytes(data, byteorder="big"), e, N)
-
-
-def decrypt_rsa(cipher, d, N):
-    assert isinstance(cipher, int), "Data is not of type int"
-
-    return rsa.decrypt(cipher, d, N)
 
 
 def output(opt, data, out=None):
@@ -85,7 +77,7 @@ def output(opt, data, out=None):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--task", type=str, default="test_rsa", help="encrypt, decrypt, test"
+        "--task", type=str, default="test_rsa", help="See below if else block"
     )
     parser.add_argument(
         "--input", type=str, default="file.txt", help="text or path to file"
@@ -125,29 +117,23 @@ if __name__ == "__main__":
 
     elif opt.task == "test":
         key, iv = config_aes(opt)
-        start = time.time()
         encrypted_bytes = encrypt_aes(data, key, iv)
-        print(f"Encrypting took: {time.time() - start} sec")
 
         output(opt, encrypted_bytes, out="output/test.encrypted")
 
-        start = time.time()
         decrypted_bytes = decrypt_aes(encrypted_bytes, key, iv)
-        print(f"Decrypting took: {time.time() - start} sec")
 
         output(opt, decrypted_bytes, out="output/test.decrypted")
 
         # Encrypt (iv, key)
-        start = time.time()
         enc, dec = rsa.test(iv + key)
-        print(f"RSA test everything took: {time.time() - start} sec")
 
         assert (
-            dec.to_bytes(16 + opt.aes_key_size, byteorder="big") == iv + key
+            int_to_bytes(dec) == iv + key
         ), "Key is not the same as the decrypted value"
 
-        enc = enc.to_bytes((enc.bit_length() + 7) // 8, byteorder="big")
-        dec = dec.to_bytes((dec.bit_length() + 7) // 8, byteorder="big")
+        enc = int_to_bytes(enc)
+        dec = int_to_bytes(dec)
 
         output(opt, enc, out="output/key.encrypted")
         output(opt, dec, out="output/key.decrypted")
