@@ -145,7 +145,7 @@ class RSA:
     def load_pub_pem(cls, path, file_name):
         from RSA.key import PublicKey
 
-        with open(os.path.join(path, file_name + ".pub"), "rb") as f:
+        with open(os.path.join(path, file_name), "rb") as f:
             pk_pem = f.read()
 
         pk = PublicKey._load_pkcs1_pem(pk_pem)

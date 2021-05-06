@@ -53,10 +53,14 @@ def config_rsa(opt):
      - A new RSA object if does not satisfy the above
     """
     if opt.rsa_priv:
-        return rsa.RSA.load_priv_pem(opt.rsa_priv)
+        opt.passed_key = True
+        path, name = os.path.split(opt.rsa_priv)
+        return rsa.RSA.load_priv_pem(path, name)
 
     if opt.rsa_pub:
-        return rsa.RSA.load_priv_pem(opt.rsa_priv)
+        opt.passed_key = True
+        path, name = os.path.split(opt.rsa_pub)
+        return rsa.RSA.load_pub_pem(path, name)
 
     return rsa.RSA(opt.rsa_key_size)
 
@@ -114,7 +118,7 @@ if __name__ == "__main__":
         "--rsa-key-size", type=int, default=1024, help="RSA key size in bytes"
     )
     parser.add_argument(
-        "--rsa-pub", type=str, default=None, help="RSA public key path in PEM format"
+        "--rsa-pub", type=str, default=None, help="RSA public key path in PEM format",
     )
     parser.add_argument(
         "--rsa-priv", type=str, default=None, help="RSA private key path in PEM format"
@@ -147,9 +151,18 @@ if __name__ == "__main__":
 
         enc = rsa_obj.encrypt(data)
 
-        rsa_obj.save_pem("output", "key")
+        if not opt.passed_key:
+            rsa_obj.save_pem("output", "key")
 
         output(opt, enc, out="output/file.encrypted")
+
+    elif opt.task == "decrypt_rsa":
+        rsa_obj = config_rsa(opt)
+
+        assert hasattr(rsa_obj, "d"), "RSA object does not have decrypt key"
+        dec = rsa_obj.decrypt(data)
+
+        output(opt, dec, out="output/file.decrypted")
 
     elif opt.task == "test":  # This uses old RSA code
         key, iv = config_aes(opt)
