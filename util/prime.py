@@ -1,52 +1,54 @@
-
 # https://www.geeksforgeeks.org/how-to-generate-large-prime-numbers-for-rsa-algorithm/
 
 # Large Prime Generation for RSA
 import random
-  
-# Pre generated primes  
+
+# Pre generated primes
 def nBitRandom(n):
-    return random.randrange(2**(n-1)+1, 2**n - 1)
-  
+    return random.randrange(2 ** (n - 1) + 1, 2 ** n - 1)
+
+
 def _getLowLevelPrime(n):
-    '''Generate a prime candidate not divisible 
-    by primes list'''
+    """Generate a prime candidate not divisible 
+    by primes list"""
     while True:
         # Obtain a random number
-        candidate = nBitRandom(n) 
-  
-         # Test divisibility by pre-generated 
-         # primes
+        candidate = nBitRandom(n)
+
+        # Test divisibility by pre-generated
+        # primes
         for divisor in first_primes_list:
             if candidate % divisor == 0:
                 break
-        else: 
+        else:
             return candidate
-  
+
+
 def isMillerRabinPassed(mrc, numberOfRabinTrials=20):
-    '''Run 20 iterations of Rabin Miller Primality test'''
+    """Run 20 iterations of Rabin Miller Primality test"""
     maxDivisionsByTwo = 0
-    ec = mrc-1
+    ec = mrc - 1
     while ec % 2 == 0:
         ec >>= 1
         maxDivisionsByTwo += 1
-    assert(2**maxDivisionsByTwo * ec == mrc-1)
-  
+    assert 2 ** maxDivisionsByTwo * ec == mrc - 1
+
     def trialComposite(round_tester):
         if pow(round_tester, ec, mrc) == 1:
             return False
         for i in range(maxDivisionsByTwo):
-            if pow(round_tester, 2**i * ec, mrc) == mrc-1:
+            if pow(round_tester, 2 ** i * ec, mrc) == mrc - 1:
                 return False
         return True
-  
+
     # Set number of trials here
     for i in range(numberOfRabinTrials):
         round_tester = random.randrange(2, mrc)
         if trialComposite(round_tester):
             return False
     return True
-  
+
+
 def getPrime(n=2048):
     while True:
         prime_candidate = _getLowLevelPrime(n)
@@ -56,6 +58,8 @@ def getPrime(n=2048):
             x = prime_candidate
             return x
 
+
+# fmt: off
 first_primes_list = [     2,      3,      5,      7,     11,     13,     17,     19,     23,     29,
     31,     37,     41,     43,     47,     53,     59,     61,     67,     71,
     73,     79,     83,     89,     97,    101,    103,    107,    109,    113,
@@ -1057,3 +1061,4 @@ first_primes_list = [     2,      3,      5,      7,     11,     13,     17,    
 104549, 104551, 104561, 104579, 104593, 104597, 104623, 104639, 104651, 104659,
 104677, 104681, 104683, 104693, 104701, 104707, 104711, 104717, 104723, 104729,
 ]
+# fmt: on
