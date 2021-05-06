@@ -59,6 +59,9 @@ class TestRSA(unittest.TestCase):
         self.assertEqual(rsa_obj.N, N)
         self.assertEqual(rsa_obj.bits, bits)
 
+        # d should not be in pub key
+        self.assertRaises(AttributeError, lambda: rsa_obj.d)
+
         self.assertEqual(len(enc_real), len(enc_test))
         self.assertEqual(enc_real, enc_test)
 
