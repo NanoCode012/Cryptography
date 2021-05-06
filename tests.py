@@ -1,11 +1,20 @@
 import unittest
 
 from util.parser import parse_input, int_to_bytes
-import util.aes as aes
-import util.rsa as rsa
+import AES.aes as aes
+import RSA.rsa as rsa
 import os
 
-from util.AES.tests import *
+from AES.tests import (
+    TestBlock,
+    TestKeySizes,
+    TestCbc,
+    TestPcbc,
+    TestCfb,
+    TestOfb,
+    TestCtr,
+    TestFunctions,
+)
 
 
 class TestRSA(unittest.TestCase):

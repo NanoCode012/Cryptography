@@ -1,5 +1,6 @@
 import Crypto.Util.number
 import sys
+import os
 
 from util.util import timing
 
@@ -116,8 +117,7 @@ class RSA:
         return bytes(bytes_arr)
 
     def save_pub_pem(self, path, file_name):
-        from util.RSA.key import PublicKey
-        import os
+        from RSA.key import PublicKey
 
         pk = PublicKey(e=self.e, N=self.N)._save_pkcs1_pem()
 
@@ -125,8 +125,7 @@ class RSA:
             f.write(pk)
 
     def save_priv_pem(self, path, file_name):
-        from util.RSA.key import PrivateKey
-        import os
+        from RSA.key import PrivateKey
 
         pr = PrivateKey(
             e=self.e, N=self.N, d=self.d, p=self.p, q=self.q
@@ -144,8 +143,7 @@ class RSA:
 
     @classmethod
     def load_pub_pem(cls, path, file_name):
-        from util.RSA.key import PublicKey
-        import os
+        from RSA.key import PublicKey
 
         with open(os.path.join(path, file_name + ".pub"), "rb") as f:
             pk_pem = f.read()
@@ -162,8 +160,7 @@ class RSA:
 
     @classmethod
     def load_priv_pem(cls, path, file_name):
-        from util.RSA.key import PrivateKey
-        import os
+        from RSA.key import PrivateKey
 
         with open(os.path.join(path, file_name), "rb") as f:
             pr_pem = f.read()

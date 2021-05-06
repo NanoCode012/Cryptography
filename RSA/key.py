@@ -1,7 +1,7 @@
 # Adapted from https://github.com/sybrenstuvel/python-rsa/blob/main/rsa/key.py
 
 from pyasn1.type import univ, namedtype, tag
-import util.RSA.pem as pem
+import RSA.pem as pem
 
 
 class PublicKey:
@@ -23,7 +23,7 @@ class PublicKey:
         """
 
         from pyasn1.codec.der import encoder
-        from util.RSA.asn1 import AsnPubKey
+        from RSA.asn1 import AsnPubKey
 
         # Create the ASN object
         asn_key = AsnPubKey()
@@ -57,7 +57,7 @@ class PublicKey:
         """
 
         from pyasn1.codec.der import decoder
-        from util.RSA.asn1 import AsnPubKey
+        from RSA.asn1 import AsnPubKey
 
         (priv, _) = decoder.decode(keyfile, asn1Spec=AsnPubKey())
         return cls(N=int(priv["modulus"]), e=int(priv["publicExponent"]))
@@ -147,7 +147,7 @@ class PrivateKey:
         """
 
         from pyasn1.codec.der import encoder
-        from util.RSA.asn1 import AsnPrivKey
+        from RSA.asn1 import AsnPrivKey
 
         # Create the ASN object
         asn_key = AsnPrivKey()

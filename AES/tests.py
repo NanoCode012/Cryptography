@@ -1,5 +1,5 @@
 import unittest
-from util.aes import AES, encrypt, decrypt
+from AES.aes import AES, encrypt, decrypt
 
 
 class TestBlock(unittest.TestCase):

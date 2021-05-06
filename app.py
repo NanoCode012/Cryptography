@@ -13,17 +13,17 @@ except:
 
 
 try:
-    import util.aes_c as aes
+    import AES.aes_c as aes
 except:
-    import util.aes as aes
+    import AES.aes as aes
 
     print("Importing aes.. Please run setup.py")
 
 try:
     # assert False
-    import util.rsa_c as rsa
+    import RSA.rsa_c as rsa
 except:
-    import util.rsa as rsa
+    import RSA.rsa as rsa
 
     print("Importing rsa.. Please run setup.py")
 
