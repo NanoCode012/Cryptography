@@ -212,20 +212,15 @@ class RSA:
         # assert isinstance(C, bytes), 'C has to be bytes obj'
 
         length = self.length * 2
-        # print(f'Length of c: {len(C)}')
-        # print(f'Length: {length}')
         C_arr = self._split_bytes(C, length)
-        # print(f'Length C_arr : {len(C_arr)}')
-        # print(f'Length C_arr[0]: {len(C_arr[0])}')
+
         assert len(C) % length == 0, "Not divisible"
 
         # Convert to int and decrypt block by block
-        # C_arr = [int.from_bytes(c, byteorder='big') for c in C]
         C_arr = [int.from_bytes(c, byteorder="big") for c in C_arr]
 
         # https://stackoverflow.com/questions/5246856/how-did-python-implement-the-built-in-function-pow
         # https://github.com/python/cpython/blob/109fc2792a490ee5cd8a423e17d415fbdedec5c8/Objects/longobject.c#L4244-L4447
-        # C_arr = [int_to_bytes(pow(c, self.d, self.N)) for c in C_arr]
 
         # Update to https://en.wikipedia.org/wiki/RSA_(cryptosystem)#Using_the_Chinese_remainder_algorithm (See next block)
         # Assign list size first to reduce overhead with dynamic resizing
