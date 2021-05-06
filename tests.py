@@ -51,7 +51,7 @@ class TestRSA(unittest.TestCase):
 
         e, N, bits = self.rsa_obj.e, self.rsa_obj.N, self.rsa_obj.bits
 
-        rsa_obj = rsa.RSA.load_pub_pem("output", "temp")
+        rsa_obj = rsa.RSA.load_pub_pem("output", "temp.pub")
         enc_test = rsa_obj.encrypt(self.data)
 
         self.assertNotEqual(e, N)
@@ -86,7 +86,7 @@ class TestRSA(unittest.TestCase):
     def test_fail_load_pub_to_decrypt(self):
         enc = self.rsa_obj.encrypt(self.data)
         self.rsa_obj.save_pub_pem("output", "temp")
-        rsa_obj = rsa.RSA.load_pub_pem("output", "temp")
+        rsa_obj = rsa.RSA.load_pub_pem("output", "temp.pub")
 
         self.assertRaises(AttributeError, rsa_obj.decrypt, enc)
 
