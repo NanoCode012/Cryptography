@@ -3,7 +3,7 @@
 # Large Prime Generation for RSA
 import random
 
-# Pre generated primes
+
 def nBitRandom(n):
     return random.randrange(2 ** (n - 1) + 1, 2 ** n - 1)
 
@@ -15,8 +15,7 @@ def _getLowLevelPrime(n):
         # Obtain a random number
         candidate = nBitRandom(n)
 
-        # Test divisibility by pre-generated
-        # primes
+        # Test divisibility by pre-generated primes
         for divisor in first_primes_list:
             if candidate % divisor == 0:
                 break
