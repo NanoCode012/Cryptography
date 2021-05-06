@@ -26,6 +26,23 @@ except:
     print("Importing rsa.. Please run setup.py")
 
 
+def config_aes(opt):
+    """
+    Return (key, iv) for AES
+    """
+    if opt.key:
+        key, _ = parse_input(opt.key)
+    else:
+        key = os.urandom(opt.aes_key_size)
+
+    if opt.iv:
+        iv, _ = parse_input(opt.iv)
+    else:
+        iv = os.urandom(16)
+
+    return key, iv
+
+
 def encrypt_aes(data, key, iv):
     return aes.AES(key).encrypt_ctr(data, iv)
 
@@ -74,24 +91,17 @@ if __name__ == "__main__":
         "--input", type=str, default="file.txt", help="text or path to file"
     )
     parser.add_argument("--output", type=str, default=None, help="output path")
-    parser.add_argument("--key-size", type=int, default=16, help="key size in bytes")
+    parser.add_argument(
+        "--aes-key-size", type=int, default=16, help="AES key size in bytes"
+    )
+    parser.add_argument(
+        "--rsa-key-size", type=int, default=1024, help="RSA key size in bytes"
+    )
     parser.add_argument("--show", action="store_true", help="output to console")
-    parser.add_argument("--key", type=str, default=None, help="key path in bytes")
-    parser.add_argument("--iv", type=str, default=None, help="iv path in bytes")
+    parser.add_argument("--key", type=str, default=None, help="AES key path in bytes")
+    parser.add_argument("--iv", type=str, default=None, help="AES iv path in bytes")
     parser.add_argument("--rsa", action="store_true", help="use rsa to encrypt")
     opt = parser.parse_args()
-
-    if opt.key:
-        with open(opt.key, "rb") as f:
-            key = f.read()
-    else:
-        key = os.urandom(opt.key_size)
-
-    if opt.iv:
-        with open(opt.iv, "rb") as f:
-            iv = f.read()
-    else:
-        iv = os.urandom(16)
 
     data, input_type = parse_input(opt.input)
 
@@ -99,6 +109,7 @@ if __name__ == "__main__":
         os.mkdir("output")
 
     if opt.task == "encrypt_aes":
+        key, iv = config_aes(opt)
         encrypted_bytes = encrypt_aes(data, key, iv)
 
         output(opt, encrypted_bytes)
@@ -107,11 +118,13 @@ if __name__ == "__main__":
         output(opt, iv, out="output/iv.txt")
 
     elif opt.task == "decrypt_aes":
+        key, iv = config_aes(opt)
         decrypted_bytes = decrypt_aes(data, key, iv)
 
         output(opt, decrypted_bytes)
 
     elif opt.task == "test":
+        key, iv = config_aes(opt)
         start = time.time()
         encrypted_bytes = encrypt_aes(data, key, iv)
         print(f"Encrypting took: {time.time() - start} sec")
@@ -139,7 +152,7 @@ if __name__ == "__main__":
         # print(f'RSA decrypt took: {time.time() - start} sec')
 
         assert (
-            dec.to_bytes(16 + opt.key_size, byteorder="big") == iv + key
+            dec.to_bytes(16 + opt.aes_key_size, byteorder="big") == iv + key
         ), "Key is not the same as the decrypted value"
 
         enc = enc.to_bytes((enc.bit_length() + 7) // 8, byteorder="big")
@@ -148,7 +161,7 @@ if __name__ == "__main__":
         output(opt, enc, out="output/key.encrypted")
         output(opt, dec, out="output/key.decrypted")
     elif opt.task == "test_rsa":
-        rsa_obj = rsa.RSA(1024)
+        rsa_obj = rsa.RSA(opt.rsa_key_size)
         # Crypto lib takes 0.3s -> 1.1s for 1024bits
 
         enc = rsa_obj.encrypt(data)
@@ -181,7 +194,7 @@ if __name__ == "__main__":
         print("Test successful: RSA encryption + decryption")
     elif opt.task == "test_load_rsa_pub":
         # create a real encryption
-        rsa_obj = rsa.RSA(1024)
+        rsa_obj = rsa.RSA(opt.rsa_key_size)
         enc_real = rsa_obj.encrypt(data)
         rsa_obj.save_pub_pem("output", "key")
 
@@ -207,7 +220,7 @@ if __name__ == "__main__":
 
     elif opt.task == "test_load_rsa_priv":
         # create a real encryption
-        rsa_obj = rsa.RSA(1024)
+        rsa_obj = rsa.RSA(opt.rsa_key_size)
         enc = rsa_obj.encrypt(data)
         dec_real = rsa_obj.decrypt(enc)
         rsa_obj.save_priv_pem("output", "key")
