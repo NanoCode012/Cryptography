@@ -432,7 +432,7 @@ class TestFunctions(unittest.TestCase):
 
 
 def run():
-    unittest.main()
+    unittest.main(buffer=True)
 
 
 if __name__ == "__main__":

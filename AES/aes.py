@@ -553,7 +553,7 @@ def main():
     if len(sys.argv) < 2:
         print('Usage: ./aes.py encrypt "key" "message"')
         print("Running tests...")
-        from util.AES.tests import run
+        from tests.test_aes import run
 
         run()
     elif len(sys.argv) == 2 and sys.argv[1] == "benchmark":
