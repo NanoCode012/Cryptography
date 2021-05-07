@@ -62,11 +62,11 @@ class RSA:
         else:
             self.qinv = Crypto.Util.number.inverse(self.q, self.p)
 
-    def _pad(self, b: bytes, padding: str = "OneAndZeroes"):
+    def _pad(self, b: bytes, length: int, padding: str = "OneAndZeroes"):
         if padding == "OneAndZeroes":
             # https://crypto.stackexchange.com/questions/18171/how-to-find-which-padding-method-is-used-in-block-cipher-aes-encyption
             # Use 0x80 instead for byte level
-            return b + bytes.fromhex("80") + bytes(self.length - len(b) - 1)
+            return b + bytes.fromhex("80") + bytes(length - len(b) - 1)
 
         raise Exception("Padding not valid")
 
@@ -195,7 +195,7 @@ class RSA:
 
         # Pad
         if len(M_arr[-1]) < length:
-            M_arr[-1] = self._pad(M_arr[-1], padding=padding)
+            M_arr[-1] = self._pad(M_arr[-1], length=length, padding=padding)
 
         M_arr = [bytes_to_int(M) for M in M_arr]
         M_arr = [int_to_bytes(pow(M, self.e, self.N)) for M in M_arr]
