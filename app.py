@@ -151,7 +151,7 @@ if __name__ == "__main__":
 
         enc = rsa_obj.encrypt(data)
 
-        if not opt.passed_key:
+        if not hasattr(opt, "passed_key"):
             rsa_obj.save_pem("output", "key")
 
         output(opt, enc, out="output/file.encrypted")
