@@ -51,11 +51,8 @@ def isMillerRabinPassed(mrc, numberOfRabinTrials=20):
 def getPrime(n=2048):
     while True:
         prime_candidate = _getLowLevelPrime(n)
-        if not isMillerRabinPassed(prime_candidate):
-            continue
-        else:
-            x = prime_candidate
-            return x
+        if isMillerRabinPassed(prime_candidate):
+            return prime_candidate
 
 
 # fmt: off
