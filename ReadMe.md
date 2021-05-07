@@ -24,10 +24,10 @@ See `app.py` ArgumentParser for optional parameters.
 ## Test
 Easily test that all features are working via
 ```bash
-python tests.py [-v] 
+python test.py [-v] 
 ```
 
-`-v`: verbose
+- `-v`: verbose
 
 ## Credit
 
