@@ -15,6 +15,9 @@ class TestMix(unittest.TestCase):
         encrypted_bytes = aes.AES(self.key).encrypt_ctr(self.data, self.iv)
         decrypted_bytes = aes.AES(self.key).decrypt_ctr(encrypted_bytes, self.iv)
 
+        self.assertEqual(self.data, decrypted_bytes)
+        self.assertNotEqual(encrypted_bytes, decrypted_bytes)
+
         rsa_obj = rsa.RSA(512)
         enc_key = rsa_obj.encrypt(self.iv + self.key)
         dec_key = rsa_obj.decrypt(enc_key)

@@ -77,6 +77,29 @@ class TestRSA(unittest.TestCase):
 
         self.assertRaises(AttributeError, rsa_obj.decrypt, enc)
 
+    def test_chinese_remainder(self):
+        enc = self.rsa_obj.encrypt(self.data)
+        dec = self.rsa_obj.decrypt(enc, use_chinese_algo=True)
+
+        self.assertEqual(self.data, dec)
+
+        dec = self.rsa_obj.decrypt(enc, use_chinese_algo=False)
+
+        self.assertEqual(self.data, dec)
+
+    def test_not_own_components(self):
+        rsa_obj = rsa.RSA(bits=512, own_components=False)
+        enc = rsa_obj.encrypt(self.data)
+        dec = rsa_obj.decrypt(enc)
+
+        self.assertEqual(self.data, dec)
+
+    def test_keysize(self):
+        rsa_obj_1024 = rsa.RSA(bits=1024)
+
+        self.assertTrue(self.rsa_obj.N < rsa_obj_1024.N)
+        self.assertTrue(self.rsa_obj.length < rsa_obj_1024.length)
+
 
 def main():
     unittest.main(buffer=True)
