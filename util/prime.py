@@ -1,62 +1,89 @@
-# https://www.geeksforgeeks.org/how-to-generate-large-prime-numbers-for-rsa-algorithm/
-
 # Large Prime Generation for RSA
 import random
 
 
-def nBitRandom(n):
+def _getNBitInteger(n):
+    # Get in range 2^(n-1) + 1 to 2^n - 1
     return random.randrange(2 ** (n - 1) + 1, 2 ** n - 1)
 
 
-def _getLowLevelPrime(n):
-    """Generate a prime candidate not divisible 
-    by primes list"""
-    while True:
-        # Obtain a random number
-        candidate = nBitRandom(n)
-
-        # Test divisibility by pre-generated primes
-        for divisor in first_primes_list:
-            if candidate % divisor == 0:
-                break
-        else:
-            return candidate
+def _getNBitOddInteger(n):
+    return _getNBitInteger(n) | 1
 
 
-def isMillerRabinPassed(mrc, numberOfRabinTrials=20):
-    """Run 20 iterations of Rabin Miller Primality test"""
-    maxDivisionsByTwo = 0
-    ec = mrc - 1
-    while ec % 2 == 0:
-        ec >>= 1
-        maxDivisionsByTwo += 1
-    assert 2 ** maxDivisionsByTwo * ec == mrc - 1
+def _isDivisbleByPrimeList(n):
+    # Test divisibility by pre-generated primes
+    for divisor in prime_list:
+        if n % divisor == 0:
+            return True
 
-    def trialComposite(round_tester):
-        if pow(round_tester, ec, mrc) == 1:
-            return False
-        for i in range(maxDivisionsByTwo):
-            if pow(round_tester, 2 ** i * ec, mrc) == mrc - 1:
+    return False
+
+
+# Pseudo-code: https://rosettacode.org/wiki/Miller%E2%80%93Rabin_primality_test
+def _passedRabinMillerTest(n, rounds=40):
+    # check special cases (n==2, n even, n < 2)
+    if n < 3 or (n & 1) == 0:
+        return n == 2
+    # precalculate n-1 incase in large n
+    n_1 = n - 1
+    # determine m and b so that 2**b * m = n - 1 and largest b
+    # b is odd by factoring powers of 2, m is maxdivisionbytwo
+    b = 0
+    m = n_1
+    while (m & 1) == 0:
+        b += 1
+        m >>= 1
+
+    tested = []
+    # we need to do at most n-2 rounds.
+    for i in range(min(rounds, n - 2)):
+        # randomly choose a < n and make sure it hasn't been tested yet
+        a = random.randrange(2, n)
+        while a in tested:
+            a = random.randrange(2, n)
+        tested.append(a)
+
+        # do the rabin-miller test
+        z = pow(a, m, n)  # (a**m) % n
+        if z == 1 or z == n_1:
+            continue
+
+        for r in range(1, b):
+            z = (z * z) % n
+            if z == 1:
                 return False
-        return True
-
-    # Set number of trials here
-    for i in range(numberOfRabinTrials):
-        round_tester = random.randrange(2, mrc)
-        if trialComposite(round_tester):
+            elif z == n_1:
+                break
+        else:  # NotPrime if never break from loop
             return False
+
     return True
 
 
-def getPrime(n=2048):
+def isPrime(candidate):
+    # check special cases
+    if candidate < 3 or candidate & 1 == 0:
+        return candidate == 2
+
+    if _isDivisbleByPrimeList(candidate):
+        return False
+
+    if not _passedRabinMillerTest(candidate):
+        return False
+
+    return True
+
+
+def getPrime(bits=2048):
     while True:
-        prime_candidate = _getLowLevelPrime(n)
-        if isMillerRabinPassed(prime_candidate):
+        prime_candidate = _getNBitOddInteger(bits)
+        if isPrime(prime_candidate):
             return prime_candidate
 
 
 # fmt: off
-first_primes_list = [     2,      3,      5,      7,     11,     13,     17,     19,     23,     29,
+prime_list = [     2,      3,      5,      7,     11,     13,     17,     19,     23,     29,
     31,     37,     41,     43,     47,     53,     59,     61,     67,     71,
     73,     79,     83,     89,     97,    101,    103,    107,    109,    113,
    127,    131,    137,    139,    149,    151,    157,    163,    167,    173,
