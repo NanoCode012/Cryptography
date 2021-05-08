@@ -191,16 +191,12 @@ class RSA:
 
         M_arr = self._split_bytes(message, length)
 
-        # print(M_arr)
-
         # Pad
         if len(M_arr[-1]) < length:
             M_arr[-1] = self._pad(M_arr[-1], length=length, padding=padding)
 
         M_arr = [bytes_to_int(M) for M in M_arr]
         M_arr = [int_to_bytes(pow(M, self.e, self.N)) for M in M_arr]
-
-        # return M_arr # test
 
         # Makes sure each block is length*2 bits before combine
         M_arr = self._pad_zeroes(M_arr, length * 2)
@@ -240,8 +236,6 @@ class RSA:
 
         # Unpad last block
         C_arr[-1] = self._unpad(C_arr[-1])
-
-        # print(C_arr)
 
         return self._join_blocks(C_arr)
 
