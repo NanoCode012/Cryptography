@@ -17,9 +17,11 @@ for file_name in file_names:
 
 for file_name in file_names:
     # get path except file
-    path = os.path.sep.join(file_name.split(os.path.sep)[:-1])
+    path = os.path.sep.join(file_name.split("/")[:-1])
     name = os.path.splitext(os.path.basename(file_name))[0]
 
     for pyd_file in glob.glob(f"{name}*.pyd"):
-        move(pyd_file, os.path.join(f"{path}/{pyd_file}"))
+        src = pyd_file
+        dst = os.path.join(path, pyd_file)
+        move(src, dst)
 
