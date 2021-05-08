@@ -89,6 +89,8 @@ def output(opt, data, out=None):
             if opt.output
             else os.path.join("output", os.path.basename(opt.input))
         )
+    else:
+        raise Exception("Output path is not valid")
 
     with open(output_file, "wb") as f:
         f.write(data)
