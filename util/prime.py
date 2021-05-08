@@ -1,4 +1,3 @@
-# Large Prime Generation for RSA
 import random
 
 
