@@ -34,7 +34,7 @@ python test.py [-v]
 
 AES credit to https://github.com/boppreh/aes
 
-RSA credit to https://asecuritysite.com/encryption/getprimen
+RSA credit to https://github.com/Legrandin/pycryptodome
 
 Functions that were borrowed have credits on top of them.
 

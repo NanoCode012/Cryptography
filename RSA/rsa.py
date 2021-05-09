@@ -240,6 +240,7 @@ class RSA:
         return self._join_blocks(C_arr)
 
 
+# https://asecuritysite.com/encryption/getprimen
 @timing
 def test(message, bits=1024):
     """
