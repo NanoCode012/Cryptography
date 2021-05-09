@@ -53,6 +53,10 @@ class TestPrime(unittest.TestCase):
 
         self.assertFalse(isPrime(20))
 
+        self.assertTrue(isPrime(26597412056021419))
+
+        self.assertTrue(isPrime(611772653333))
+
 
 def main():
     unittest.main(buffer=True)
