@@ -1,4 +1,5 @@
 import random
+import math
 
 
 def _getNBitInteger(n):
@@ -20,7 +21,7 @@ def _isDivisbleByPrimeList(n):
 
 
 # Pseudo-code: https://rosettacode.org/wiki/Miller%E2%80%93Rabin_primality_test
-def _passedRabinMillerTest(n, rounds=40):
+def _passedRabinMillerTest(n, rounds):
     # check special cases (n==2, n even, n < 2)
     if n < 3 or (n & 1) == 0:
         return n == 2
@@ -36,7 +37,8 @@ def _passedRabinMillerTest(n, rounds=40):
 
     tested = []
     # we need to do at most n-2 rounds.
-    for i in range(min(rounds, n - 2)):
+    rounds = min(rounds, n - 2)
+    for i in range(rounds):
         # randomly choose a < n and make sure it hasn't been tested yet
         a = random.randrange(2, n)
         while a in tested:
@@ -48,6 +50,7 @@ def _passedRabinMillerTest(n, rounds=40):
         if z == 1 or z == n_1:
             continue
 
+        # https://stackoverflow.com/a/23580872/8293176
         for r in range(1, b):
             z = (z * z) % n
             if z == 1:
@@ -60,7 +63,7 @@ def _passedRabinMillerTest(n, rounds=40):
     return True
 
 
-def isPrime(candidate):
+def isPrime(candidate, false_positive_prob=1e-6):
     # check special cases
     if candidate < 3 or candidate & 1 == 0:
         return candidate == 2
@@ -68,17 +71,21 @@ def isPrime(candidate):
     if _isDivisbleByPrimeList(candidate):
         return False
 
-    if not _passedRabinMillerTest(candidate):
+    # https://security.stackexchange.com/a/12582
+    # https://github.com/Legrandin/pycryptodome/blob/5dace638b70ac35bb5d9b565f3e75f7869c9d851/lib/Crypto/Util/number.py#L368-L369
+    rounds = int(math.ceil(-math.log(false_positive_prob) / math.log(4)))
+    if not _passedRabinMillerTest(candidate, rounds):
         return False
 
     return True
 
 
 def getPrime(bits=2048):
-    while True:
-        prime_candidate = _getNBitOddInteger(bits)
-        if isPrime(prime_candidate):
-            return prime_candidate
+    prime_candidate = _getNBitOddInteger(bits)
+    while not isPrime(prime_candidate):
+        prime_candidate += 2
+
+    return prime_candidate
 
 
 # fmt: off
