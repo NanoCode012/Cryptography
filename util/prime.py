@@ -68,6 +68,9 @@ def isPrime(candidate, false_positive_prob=1e-6):
     if candidate < 3 or candidate & 1 == 0:
         return candidate == 2
 
+    if candidate in prime_list:
+        return True
+
     if _isDivisbleByPrimeList(candidate):
         return False
 
