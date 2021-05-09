@@ -1,5 +1,5 @@
 # Cryptography
-
+This is a univeristy project on applying text-book RSA with some of my own modifications.
 ## Requirements
 
 ```
@@ -18,8 +18,9 @@ python setup.py build_ext --inplace
 ```bash
 python app.py [optional parameters]
 ```
+- `-h`: help
 
-See `app.py` ArgumentParser for optional parameters.
+See `app.py` ArgumentParser for detailed optional parameters.
 
 ## Test
 Easily test that all features are working via
