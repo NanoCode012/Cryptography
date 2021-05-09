@@ -37,3 +37,7 @@ AES credit to https://github.com/boppreh/aes
 RSA credit to https://asecuritysite.com/encryption/getprimen
 
 Functions that were borrowed have credits on top of them.
+
+## License
+
+As of right now, 09-May-2021, this repo is not for public use. It will later be open after project submission.
