@@ -181,6 +181,8 @@ if __name__ == "__main__":
 
         assert dec_key == iv + key, "Decrypted key is not the same as key+iv"
 
+        output(opt, enc_key, out="output/aes-key")
+
         output(opt, encrypted_bytes, out="output/file.encrypted")
         output(opt, decrypted_bytes, out="output/file.decrypted")
 
