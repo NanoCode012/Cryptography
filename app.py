@@ -117,7 +117,7 @@ if __name__ == "__main__":
 
     # RSA arguments
     parser.add_argument(
-        "--rsa-key-size", type=int, default=1024, help="RSA key size in bytes"
+        "--rsa-key-size", type=int, default=1024, help="RSA key size in bits"
     )
     parser.add_argument(
         "--rsa-pub", type=str, default=None, help="RSA public key path in PEM format",
