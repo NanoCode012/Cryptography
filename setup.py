@@ -3,9 +3,17 @@
 from setuptools import setup
 from Cython.Build import cythonize
 from shutil import copyfile, move
-import glob, os
+import glob, os, platform
 
-file_names = ["AES/aes.py", "RSA/rsa.py", "util/parser.py", "util/prime.py"]
+file_names = [
+    "AES/aes.py",
+    "RSA/rsa.py",
+    "util/parser.py",
+]
+
+# Slow for linux. Only do for Windows
+if platform.system() == "Windows":
+    file_names.append("util/prime.py")
 
 for file_name in file_names:
     file_name_c = file_name[:-3] + "_c.pyx"
@@ -23,5 +31,10 @@ for file_name in file_names:
     for pyd_file in glob.glob(f"{name}*.pyd"):
         src = pyd_file
         dst = os.path.join(path, pyd_file)
+        move(src, dst)
+
+    for so_file in glob.glob(os.path.join("build", "lib*", f"{name}*.so")):
+        src = so_file
+        dst = os.path.join(path, os.path.basename(src))
         move(src, dst)
 
