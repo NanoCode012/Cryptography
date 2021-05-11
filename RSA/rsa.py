@@ -213,7 +213,7 @@ class RSA:
         assert len(C) % length == 0, "Not divisible"
 
         # Convert to int and decrypt block by block
-        C_arr = [int.from_bytes(c, byteorder="big") for c in C_arr]
+        C_arr = [bytes_to_int(c) for c in C_arr]
 
         # https://stackoverflow.com/questions/5246856/how-did-python-implement-the-built-in-function-pow
         # https://github.com/python/cpython/blob/109fc2792a490ee5cd8a423e17d415fbdedec5c8/Objects/longobject.c#L4244-L4447
@@ -279,7 +279,7 @@ def test(message, bits=1024):
     if isinstance(message, str):
         message = message.encode("utf-8")
 
-    M = int.from_bytes(message, byteorder="big")
+    M = bytes_to_int(message)
     # print ("\n\n=== Let's try these keys ==")
     # print ("\nRSA Message: ",M)
     enc = pow(M, e, N)
