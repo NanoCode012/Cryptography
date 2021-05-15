@@ -1,5 +1,5 @@
 # Cryptography
-This is a univeristy project on applying text-book RSA with some of my own modifications.
+This is a univeristy project on applying text-book RSA with some modifications.
 ## Requirements
 
 ```
@@ -40,4 +40,10 @@ Functions that were borrowed have credits on top of them.
 
 ## License
 
-As of right now, 09-May-2021, this repo is not for public use. It will later be open after project submission.
+MIT
+
+## Credits
+
+Thanks to my teammate: 
+
+Razermanth https://github.com/razermanth
